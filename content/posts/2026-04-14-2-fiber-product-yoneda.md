@@ -1,46 +1,66 @@
 ---
-title: "2-Fiber Products: Terminal Cones vs. Representability"
+title: "Two Paths to 2-Pullbacks: Cones, Representability, and Higher Limits"
 date: 2026-04-14
 tags: ["category-theory", "higher-categories", "homotopy-theory", "yoneda"]
 math: true
 ---
 
-Let $\mathcal{C}$ be a $(2,1)$-category and $A \xrightarrow{f} B \xleftarrow{g} C$ a cospan. For $X \in \mathcal{C}$, let $\mathbf{Sq}(X)$ be the groupoid whose objects are triples
+When formalizing the foundations of $(2,1)$-categories, defining limits rigorously requires handling 2-isomorphisms and their coherences. The 2-fiber product (or 2-pullback) of a cospan is the quintessential example.
 
-$$u : X \to A, \quad v : X \to C, \quad \alpha : f \circ u \xRightarrow{\sim} g \circ v,$$
+There are two primary ways to define a 2-fiber product: via a terminal object in a category of cones (an approach often seen in texts like the Stacks Project), or via a representable pseudofunctor.
 
-and whose morphisms are pairs $(\phi: u \Rightarrow u', \psi: v \Rightarrow v')$ compatible with $\alpha, \alpha'$. This defines a pseudofunctor $\mathbf{Sq} : \mathcal{C}^{\mathrm{op}} \to \mathbf{Grpd}$.
+This post unpacks the rigorous equivalence between these two definitions and explores the higher categorical structures they reveal.
 
-**Definition A.** $P \in \mathcal{C}$ with $(p_A, p_C, \alpha_P) \in \mathbf{Sq}(P)$ is the *2-fiber product* if it is 2-terminal in $\mathbf{Cone}(f,g)$: for every cone $(X, u, v, \alpha)$,
-$$\mathbf{Cone}(f,g)\bigl((X,u,v,\alpha),\,(P,p_A,p_C,\alpha_P)\bigr) \simeq \{*\}.$$
+### The Setup: The Groupoid of Squares
 
-**Definition B.** $P$ is the *2-fiber product* if it represents $\mathbf{Sq}$, i.e., there is a pseudonatural equivalence
-$$\mathrm{Hom}_{\mathcal{C}}(-, P) \simeq \mathbf{Sq}(-).$$
+Let $\mathcal{C}$ be a $(2,1)$-category and consider a cospan diagram:
 
-**Proposition.** Definitions A and B are equivalent.
+$$A \xrightarrow{f} B \xleftarrow{g} C.$$
 
-*Proof.* By the 2-Yoneda lemma, pseudonatural transformations $\mathrm{Hom}(-, P) \Rightarrow F$ correspond to elements of $F(P)$.
+For any object $X \in \mathcal{C}$, we define $\mathbf{Sq}(X)$ as the groupoid of 2-commutative squares over this cospan with summit $X$. An object in $\mathbf{Sq}(X)$ is a tuple $(u, v, \alpha)$, where $u: X \to A$ and $v: X \to C$ are 1-morphisms, and $\alpha: f \circ u \Rightarrow g \circ v$ is a 2-isomorphism.
 
-$(B \Rightarrow A)$: Evaluate the equivalence $\eta : \mathrm{Hom}(-, P) \simeq \mathbf{Sq}(-)$ at $\mathrm{id}_P$ to obtain
-$$(p_A, p_C, \alpha_P) := \eta_P(\mathrm{id}_P) \in \mathbf{Sq}(P).$$
-Pseudonaturality of $\eta$ implies every cone $(X, u, v, \alpha)$ maps to $(P, p_A, p_C, \alpha_P)$ through a contractible groupoid of choices.
+The mapping $X \mapsto \mathbf{Sq}(X)$ naturally extends to a pseudofunctor $\mathbf{Sq}: \mathcal{C}^{\text{op}} \to \mathbf{Grpd}$, where $\mathbf{Grpd}$ is the $(2,1)$-category of groupoids.
 
-$(A \Rightarrow B)$: Define
-$$\Phi_X : \mathrm{Hom}(X, P) \to \mathbf{Sq}(X), \qquad h \mapsto (p_A \circ h,\; p_C \circ h,\; \alpha_P \star \mathrm{id}_h).$$
-The 2-terminal property makes $\Phi_X$ essentially surjective and fully faithful, hence an equivalence. These equivalences assemble pseudonaturally. $\square$
+### The Two Definitions
 
-## Remarks
+**1. The Cone Approach (Stacks Project Style)**
 
-- **Homotopy pullbacks.** In a model category, the 2-fiber product is the homotopy pullback. The 2-isomorphism $\alpha$ encodes an explicit homotopy between $f \circ u$ and $g \circ v$, the data discarded by the ordinary pullback.
+We construct a $(2,1)$-category of cones, $\mathbf{Cone}(f,g)$, where objects are the 2-commutative squares defined above. A 2-fiber product is defined as an object $P$ equipped with a universal square $(p_A, p_C, \alpha_P)$ that is **2-terminal** in $\mathbf{Cone}(f,g)$.
 
-- **Kan extensions.** Definition B exhibits the 2-limit as a right 2-Kan extension of the diagram along $\mathcal{J} \to \{*\}$.
+Strictly, this means for any other square $S \in \mathbf{Cone}(f,g)$ with summit $X$, the groupoid of morphisms $\operatorname{Hom}_{\mathbf{Cone}}(S, P)$ is equivalent to the terminal groupoid $\ast$.
 
-- **Grothendieck fibrations.** $\mathbf{Sq}$ classifies a Street fibration $\mathbf{Cone}(f,g) \to \mathcal{C}$; the 2-fiber product represents its global sections.
+**2. The Representability Approach**
 
-## $(\infty,1)$-Categorical Formulation
+A 2-fiber product is an object $P \in \mathcal{C}$ that **represents** the pseudofunctor $\mathbf{Sq}$. This requires a pseudonatural equivalence of groupoids:
 
-In an $(\infty,1)$-category $\mathcal{C}$, a cospan is a functor $F : \Lambda^2_2 \to \mathcal{C}$. The $\infty$-limit of $F$ is a terminal object in the slice $\mathcal{C}_{/F}$. By the $\infty$-Yoneda lemma this is equivalent to an equivalence of Kan complexes
+$$\operatorname{Hom}_{\mathcal{C}}(-, P) \simeq \mathbf{Sq}(-).$$
 
-$$\mathrm{Map}_{\mathcal{C}}(X, P) \simeq \mathrm{Map}_{\mathrm{Fun}(\Lambda^2_2,\,\mathcal{C})}(\Delta_X, F)$$
+For those working on digitizing or formalizing foundations—such as translating Stacks Project machinery into Lean 4 via Mathlib—this second approach is often architecturally superior. It cleanly bypasses the "coherence hell" of explicitly constructing 2-cells and pasting diagrams required to prove terminality in a slice-like category.
 
-for all $X$. The two definitions become *definitionally* identical: the terminal-cone and representability conditions collapse into a single statement, with all coherence data handled by the simplicial structure.
+### The Bridge: The 2-Yoneda Lemma
+
+The assertion that these two definitions are strictly equivalent is a direct consequence of the **2-Yoneda Lemma**.
+
+- **From Representability to Cones:** If $\operatorname{Hom}_{\mathcal{C}}(-, P) \simeq \mathbf{Sq}(-)$ holds, the 2-Yoneda Lemma dictates that this equivalence is entirely determined by a single "universal element" in $\mathbf{Sq}(P)$. We find this element by evaluating the equivalence at the identity morphism $1_P \in \operatorname{Hom}_{\mathcal{C}}(P, P)$. This universal element is precisely the 2-terminal square $(p_A, p_C, \alpha_P)$ required by the Cone definition.
+
+- **From Cones to Representability:** Conversely, if $P$ is 2-terminal in $\mathbf{Cone}(f,g)$, mapping any object $X$ into $P$ via a morphism $h: X \to P$ induces a square in $\mathbf{Sq}(X)$ by composition with the universal square. The 2-terminal universal property ensures this assignment functor is essentially surjective and fully faithful, yielding the equivalence $\operatorname{Hom}_{\mathcal{C}}(X, P) \simeq \mathbf{Sq}(X)$.
+
+### Deeper Geometry and $\infty$-Categorical Horizons
+
+This equivalence is not just a notational convenience; it exposes fundamental topological and structural realities:
+
+- **Homotopy Pullbacks:** In topological spaces or simplicial sets (viewed through the model category equivalence to a $(2,1)$-category), the 2-fiber product is the **homotopy pullback**. The 2-isomorphism $\alpha$ is literally a path (homotopy) in the mapping space between $f \circ u$ and $g \circ v$.
+
+- **Grothendieck Fibrations:** The data of $\mathbf{Sq}(X)$ describes the fibers of a Street fibration $\mathbf{Cone}(f,g) \to \mathcal{C}$. The 2-limit represents the "global sections" of this fibration.
+
+**The $(\infty, 1)$-Categorical Generalization**
+
+When we step up to $(\infty, 1)$-categories (quasi-categories), the distinction between "cones" and "representability" dissolves elegantly.
+
+Let the cospan be a functor of $\infty$-categories $F: \Lambda^2_2 \to \mathcal{C}$. The $\infty$-category of cones over $F$ is defined using the join of simplicial sets to form the slice $\infty$-category $\mathcal{C}_{/F}$.
+
+The $\infty$-limit is defined simply as a terminal object in $\mathcal{C}_{/F}$. Thanks to the $\infty$-categorical Yoneda lemma, an object $P$ being terminal in this slice category is unconditionally equivalent to an equivalence of mapping spaces (Kan complexes):
+
+$$\operatorname{Map}_{\mathcal{C}}(X, P) \simeq \operatorname{Map}_{\operatorname{Fun}(\Lambda^2_2,\, \mathcal{C})}(\Delta_X, F).$$
+
+By migrating to $(\infty, 1)$-categories, the equivalence observed in the $(2,1)$-categorical case becomes the universal definitional template for all limits, seamlessly managing infinite hierarchies of higher homotopies without manual coherence checks.
