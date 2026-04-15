@@ -1,0 +1,37 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import { url } from '../lib/url';
+
+interface Props {
+  title: string;
+  pubDate: Date;
+  tags: string[];
+  description?: string;
+}
+
+const { title, pubDate, tags, description } = Astro.props;
+const dateStr = pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="max-w-2xl mx-auto px-4 py-8">
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">{title}</h1>
+      <div class="mt-2 flex flex-wrap items-center gap-4 text-sm text-gray-500">
+        <time>{dateStr}</time>
+        {tags.length > 0 && (
+          <div class="flex flex-wrap gap-2">
+            {tags.map(tag => (
+              <a href={url('/tags/' + tag + '/')} class="bg-gray-100 text-gray-600 px-2 py-0.5 rounded hover:bg-gray-200 no-underline">
+                {tag}
+              </a>
+            ))}
+          </div>
+        )}
+      </div>
+    </header>
+    <article class="prose prose-slate lg:prose-lg max-w-none">
+      <slot />
+    </article>
+  </div>
+</BaseLayout>
