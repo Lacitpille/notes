@@ -1,0 +1,23 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostCard from '../components/PostCard.astro';
+
+const allPosts = await getCollection('posts', ({ data }) => !data.draft);
+const posts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BaseLayout title="Math Notes">
+  <div class="max-w-2xl mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-900 mb-8">Posts</h1>
+    {posts.map(post => (
+      <PostCard
+        title={post.data.title}
+        pubDate={post.data.pubDate}
+        slug={post.slug}
+        tags={post.data.tags}
+        description={post.data.description}
+      />
+    ))}
+  </div>
+</BaseLayout>
