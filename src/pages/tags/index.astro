@@ -15,12 +15,12 @@ const tags = [...tagCounts.entries()].sort((a, b) => a[0].localeCompare(b[0]));
 
 <BaseLayout title="Tags - Math Notes">
   <div class="max-w-2xl mx-auto px-4 py-10">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Tags</h1>
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8">Tags</h1>
     <div class="flex flex-wrap gap-3">
       {tags.map(([tag, count]) => (
-        <a href={url('/tags/' + tag + '/')} class="inline-flex items-center gap-1.5 bg-white border border-gray-200 shadow-sm text-gray-700 px-4 py-2 rounded-full text-sm font-medium hover:border-indigo-300 hover:text-indigo-600 hover:shadow-md transition-all no-underline">
+        <a href={url('/tags/' + tag + '/')} class="inline-flex items-center gap-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-sm text-gray-700 dark:text-gray-300 px-4 py-2 rounded-full text-sm font-medium hover:border-indigo-300 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 hover:shadow-md transition-all no-underline">
           {tag}
-          <span class="bg-indigo-50 text-indigo-500 text-xs font-semibold px-1.5 py-0.5 rounded-full">{count}</span>
+          <span class="bg-indigo-50 dark:bg-indigo-950 text-indigo-500 dark:text-indigo-400 text-xs font-semibold px-1.5 py-0.5 rounded-full">{count}</span>
         </a>
       ))}
     </div>

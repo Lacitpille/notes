@@ -8,9 +8,11 @@
   }
 }
 
-/* Make prose links indigo */
 @layer utilities {
   .prose a {
     @apply text-indigo-600 no-underline hover:underline;
+  }
+  .dark .prose a {
+    @apply text-indigo-400;
   }
 }

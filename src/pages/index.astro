@@ -9,7 +9,7 @@ const posts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.
 
 <BaseLayout title="Math Notes">
   <div class="max-w-2xl mx-auto px-4 py-10">
-    <h1 class="text-3xl font-bold text-gray-900 mb-8">Posts</h1>
+    <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-8">Posts</h1>
     <div class="flex flex-col gap-5">
       {posts.map(post => (
         <PostCard
