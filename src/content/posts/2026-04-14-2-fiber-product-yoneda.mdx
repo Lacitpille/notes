@@ -14,7 +14,9 @@ This post unpacks the rigorous equivalence between these two definitions and exp
 
 Let $\mathcal{C}$ be a $(2,1)$-category and consider a cospan diagram:
 
-$$A \xrightarrow{f} B \xleftarrow{g} C.$$
+$$
+A \xrightarrow{f} B \xleftarrow{g} C.
+$$
 
 For any object $X \in \mathcal{C}$, we define $\mathbf{Sq}(X)$ as the groupoid of 2-commutative squares over this cospan with summit $X$. An object in $\mathbf{Sq}(X)$ is a tuple $(u, v, \alpha)$, where $u: X \to A$ and $v: X \to C$ are 1-morphisms, and $\alpha: f \circ u \Rightarrow g \circ v$ is a 2-isomorphism.
 
@@ -32,7 +34,9 @@ Strictly, this means for any other square $S \in \mathbf{Cone}(f,g)$ with summit
 
 A 2-fiber product is an object $P \in \mathcal{C}$ that **represents** the pseudofunctor $\mathbf{Sq}$. This requires a pseudonatural equivalence of groupoids:
 
-$$\operatorname{Hom}_{\mathcal{C}}(-, P) \simeq \mathbf{Sq}(-).$$
+$$
+\operatorname{Hom}_{\mathcal{C}}(-, P) \simeq \mathbf{Sq}(-).
+$$
 
 For those working on digitizing or formalizing foundations—such as translating Stacks Project machinery into Lean 4 via Mathlib—this second approach is often architecturally superior. It cleanly bypasses the "coherence hell" of explicitly constructing 2-cells and pasting diagrams required to prove terminality in a slice-like category.
 
@@ -42,7 +46,11 @@ The assertion that these two definitions are strictly equivalent is a direct con
 
 - **From Representability to Cones:** If $\operatorname{Hom}_{\mathcal{C}}(-, P) \simeq \mathbf{Sq}(-)$ holds, the 2-Yoneda Lemma dictates that this equivalence is entirely determined by a single "universal element" in $\mathbf{Sq}(P)$. We find this element by evaluating the equivalence at the identity morphism $1_P \in \operatorname{Hom}_{\mathcal{C}}(P, P)$. This universal element is precisely the 2-terminal square $(p_A, p_C, \alpha_P)$ required by the Cone definition.
 
-- **From Cones to Representability:** Conversely, if $P$ is 2-terminal in $\mathbf{Cone}(f,g)$, mapping any object $X$ into $P$ via a morphism $h: X \to P$ induces a square in $\mathbf{Sq}(X)$ by composition with the universal square. The 2-terminal universal property ensures this assignment functor is essentially surjective and fully faithful, yielding the equivalence $\operatorname{Hom}_{\mathcal{C}}(X, P) \simeq \mathbf{Sq}(X)$.
+- **From Cones to Representability:** Conversely, if $P$ is 2-terminal in $\mathbf{Cone}(f,g)$, mapping any object $X$ into $P$ via a morphism $h: X \to P$ induces a square in $\mathbf{Sq}(X)$ by composition with the universal square. The 2-terminal universal property ensures this assignment functor is essentially surjective and fully faithful, yielding the equivalence:
+
+$$
+\operatorname{Hom}_{\mathcal{C}}(X, P) \simeq \mathbf{Sq}(X).
+$$
 
 ### Deeper Geometry and $\infty$-Categorical Horizons
 
@@ -60,6 +68,8 @@ Let the cospan be a functor of $\infty$-categories $F: \Lambda^2_2 \to \mathcal{
 
 The $\infty$-limit is defined simply as a terminal object in $\mathcal{C}_{/F}$. Thanks to the $\infty$-categorical Yoneda lemma, an object $P$ being terminal in this slice category is unconditionally equivalent to an equivalence of mapping spaces (Kan complexes):
 
-$$\operatorname{Map}_{\mathcal{C}}(X, P) \simeq \operatorname{Map}_{\operatorname{Fun}(\Lambda^2_2,\, \mathcal{C})}(\Delta_X, F).$$
+$$
+\operatorname{Map}_{\mathcal{C}}(X, P) \simeq \operatorname{Map}_{\operatorname{Fun}(\Lambda^2_2,\, \mathcal{C})}(\Delta_X, F).
+$$
 
 By migrating to $(\infty, 1)$-categories, the equivalence observed in the $(2,1)$-categorical case becomes the universal definitional template for all limits, seamlessly managing infinite hierarchies of higher homotopies without manual coherence checks.
