@@ -1,0 +1,72 @@
+---
+title: "An Agent Pipeline for Mathematical Writing"
+pubDate: 2026-04-16
+tags: ["meta", "agents", "workflow"]
+description: "How I use a multi-agent pipeline — seed, refine, diverge, deepen, critique, publish — to turn rough mathematical observations into rigorous posts."
+---
+
+import MathPostPipeline from '../../components/MathPostPipeline.jsx';
+
+Writing rigorous mathematics is slow. The gap between *noticing something interesting* and *publishing a post that states it correctly, motivates it well, and connects it to the broader literature* involves a kind of labor that is easy to postpone indefinitely.
+
+The pipeline below is my attempt to automate the scaffolding around that labor — so the only irreplaceable step is the one that requires genuine mathematical judgment.
+
+## The core problem
+
+A typical math post fails at one of three points:
+
+1. **It never starts.** The seed observation sits in a scratch file, unstructured, and the activation energy to turn it into a real draft feels too high.
+2. **It stays shallow.** The first draft captures the idea but doesn't stress-test it, doesn't find the connections, doesn't ask whether this is actually true in the edge cases.
+3. **It loses your voice.** AI-assisted writing converges toward a certain fluent blandness; the post is technically correct but says nothing that couldn't have been said by anyone.
+
+A multi-agent pipeline doesn't solve these problems — but it can change where your attention has to go. The SEED stage lowers the activation energy. The DEEPEN and CRITIQUE stages do the stress-testing. And because *you* sit at both ends (seed and final gate), the voice problem stays in your control.
+
+## The pipeline
+
+Click any stage to expand it. The REPO tab shows the directory structure that makes context accumulate across runs.
+
+<div style={{ margin: '2rem -1rem' }}>
+  <MathPostPipeline client:load />
+</div>
+
+## Why context accumulation matters
+
+The single most important file in the repo structure is `context/context.md`. Each run of the pipeline reads it before doing anything; each publish step updates it. Over time it becomes a live index of:
+
+- results you've established (with post links)
+- open questions you're tracking
+- notation decisions you've standardized
+- themes and how they connect
+
+This is what makes the DIVERGE stage useful rather than generic. When the agent fans out from a new idea, it does so against *your* accumulated work — not against the general mathematical literature in the abstract. It can surface connections like "this is the same universal property argument you used in your 2-pullback post, modulo strictification."
+
+Without that context file, you get a capable assistant with no memory. With it, you get something closer to a collaborator that has read everything you've written.
+
+## The critique phase
+
+The CRITIQUE stage runs in a **separate Claude session with fresh context**. This is deliberate. An agent that helped write the draft will defend it; an agent that reads it cold will find the gaps.
+
+The critique agent reads `context/quality-rubric.md` — a file you write and maintain — which encodes what you actually care about:
+
+- Is the central claim stated precisely, or does it gesture at precision?
+- Are the examples the right examples, or just the obvious ones?
+- Does the post say something, or does it demonstrate that something can be said?
+
+The rubric is the part that cannot be automated. It is the distillation of your mathematical taste.
+
+## On the formalization step
+
+The DEEPEN stage includes an optional Lean 4 formalization pass. Not every post warrants it — informal arguments about $(\infty,1)$-categories are not always productively formalizable — but the *attempt* is often the most useful part of the stage.
+
+When formalization fails, it usually fails because something is vaguer than it appeared. The type-checker is a very patient adversarial reader. Even a partial formalization — getting the key definitions into Lean, leaving sorry placeholders for the hard parts — forces a precision that prose can evade.
+
+## Practical notes
+
+The pipeline is not meant to be run end-to-end in one sitting. The natural rhythm is:
+
+1. Drop seeds continuously, as you notice things
+2. Run REFINE + DIVERGE in a single session when you have an hour
+3. Come back to DEEPEN + CRITIQUE with fresh eyes
+4. Final gate is a real editorial pass — read it, change what your voice would change
+
+The agents do the work that does not require being you. The work that requires being you remains yours.
