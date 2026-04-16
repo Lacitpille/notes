@@ -13,18 +13,18 @@ const { title, pubDate, slug, tags, description } = Astro.props;
 const dateStr = pubDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 ---
 
-<article class="py-6 border-b border-gray-100 last:border-0">
-  <time class="text-sm text-gray-500">{dateStr}</time>
-  <h2 class="mt-1 text-xl font-semibold">
-    <a href={url('/posts/' + slug + '/')} class="text-gray-900 hover:text-gray-600 no-underline">
+<article class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 p-6">
+  <time class="text-xs font-medium text-indigo-400 uppercase tracking-wide">{dateStr}</time>
+  <h2 class="mt-2 text-xl font-semibold leading-snug">
+    <a href={url('/posts/' + slug + '/')} class="text-gray-900 hover:text-indigo-600 transition-colors no-underline">
       {title}
     </a>
   </h2>
-  {description && <p class="mt-1 text-gray-600 text-sm">{description}</p>}
+  {description && <p class="mt-2 text-gray-500 text-sm leading-relaxed">{description}</p>}
   {tags.length > 0 && (
-    <div class="mt-2 flex flex-wrap gap-2">
+    <div class="mt-4 flex flex-wrap gap-2">
       {tags.map(tag => (
-        <a href={url('/tags/' + tag + '/')} class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded hover:bg-gray-200 no-underline">
+        <a href={url('/tags/' + tag + '/')} class="text-xs bg-indigo-50 text-indigo-600 px-2.5 py-0.5 rounded-full font-medium hover:bg-indigo-100 transition-colors no-underline">
           {tag}
         </a>
       ))}

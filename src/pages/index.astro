@@ -8,16 +8,18 @@ const posts = allPosts.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.
 ---
 
 <BaseLayout title="Math Notes">
-  <div class="max-w-2xl mx-auto px-4 py-8">
+  <div class="max-w-2xl mx-auto px-4 py-10">
     <h1 class="text-3xl font-bold text-gray-900 mb-8">Posts</h1>
-    {posts.map(post => (
-      <PostCard
-        title={post.data.title}
-        pubDate={post.data.pubDate}
-        slug={post.slug}
-        tags={post.data.tags}
-        description={post.data.description}
-      />
-    ))}
+    <div class="flex flex-col gap-5">
+      {posts.map(post => (
+        <PostCard
+          title={post.data.title}
+          pubDate={post.data.pubDate}
+          slug={post.slug}
+          tags={post.data.tags}
+          description={post.data.description}
+        />
+      ))}
+    </div>
   </div>
 </BaseLayout>

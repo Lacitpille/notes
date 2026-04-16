@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Make prose links indigo */
+@layer utilities {
+  .prose a {
+    @apply text-indigo-600 no-underline hover:underline;
+  }
+}
