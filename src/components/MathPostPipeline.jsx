@@ -1,48 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
-function useTheme() {
-  const [isDark, setIsDark] = useState(false);
-  useEffect(() => {
-    setIsDark(document.documentElement.classList.contains("dark"));
-    const observer = new MutationObserver(() => {
-      setIsDark(document.documentElement.classList.contains("dark"));
-    });
-    observer.observe(document.documentElement, { attributeFilter: ["class"] });
-    return () => observer.disconnect();
-  }, []);
-  return isDark;
-}
-
-const lightColors = {
-  bg: "#ffffff",
-  surface: "#f8fafc",
-  surfaceHover: "#f1f5f9",
-  border: "#e2e8f0",
-  text: "#111827",
-  textMuted: "#6b7280",
-  accent: "#4f46e5",
-  accentGlow: "rgba(79, 70, 229, 0.07)",
-  green: "#059669",
-  greenGlow: "rgba(5, 150, 105, 0.07)",
-  amber: "#b45309",
-  amberGlow: "rgba(180, 83, 9, 0.07)",
-  rose: "#be123c",
-  roseGlow: "rgba(190, 18, 60, 0.07)",
-  cyan: "#0e7490",
-  cyanGlow: "rgba(14, 116, 144, 0.07)",
-  chrome: "#f1f5f9",
-  chromeBorder: "#e2e8f0",
-  outerBorder: "#e2e8f0",
-  shadow: "0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)",
-};
-
-const darkColors = {
-  bg: "#1f2937",
-  surface: "#111827",
-  surfaceHover: "#374151",
-  border: "#374151",
-  text: "#f3f4f6",
-  textMuted: "#9ca3af",
+const COLORS = {
+  bg: "#0d1117",
+  surface: "#161b22",
+  surfaceHover: "#21262d",
+  border: "#30363d",
+  text: "#e6edf3",
+  textMuted: "#8b949e",
   accent: "#818cf8",
   accentGlow: "rgba(129, 140, 248, 0.12)",
   green: "#34d399",
@@ -53,10 +17,10 @@ const darkColors = {
   roseGlow: "rgba(251, 113, 133, 0.10)",
   cyan: "#22d3ee",
   cyanGlow: "rgba(34, 211, 238, 0.10)",
-  chrome: "#111827",
-  chromeBorder: "#374151",
-  outerBorder: "#374151",
-  shadow: "0 2px 16px rgba(0,0,0,0.40)",
+  chrome: "#010409",
+  chromeBorder: "#30363d",
+  outerBorder: "#30363d",
+  shadow: "0 4px 24px rgba(0,0,0,0.50)",
 };
 
 const pipelineStages = [
@@ -404,8 +368,7 @@ function FlowArrow({ color }) {
 }
 
 export default function MathPostPipeline() {
-  const isDark = useTheme();
-  const colors = isDark ? darkColors : lightColors;
+  const colors = COLORS;
   const [activeStage, setActiveStage] = useState(0);
   const [tab, setTab] = useState("pipeline");
 
@@ -446,38 +409,7 @@ export default function MathPostPipeline() {
       </div>
 
       {/* Content */}
-      <div style={{ padding: "28px 24px", color: colors.text }}>
-
-        {/* Header */}
-        <div style={{ marginBottom: 28 }}>
-          <div
-            style={{
-              fontFamily: "ui-monospace, monospace",
-              fontSize: 11,
-              color: colors.accent,
-              letterSpacing: 3,
-              marginBottom: 8,
-              textTransform: "uppercase",
-            }}
-          >
-            Math Post Agent
-          </div>
-          <h2
-            style={{
-              fontSize: 22,
-              fontWeight: 700,
-              color: colors.text,
-              lineHeight: 1.25,
-              margin: "0 0 8px 0",
-            }}
-          >
-            Knowledge Refinement Pipeline
-          </h2>
-          <p style={{ fontSize: 15, color: colors.textMuted, lineHeight: 1.65, margin: 0 }}>
-            Feed raw discoveries in. Get rigorous, thought-provoking posts out.
-            Context accumulates across runs.
-          </p>
-        </div>
+      <div style={{ padding: "20px 20px", color: colors.text }}>
 
         {/* Tabs */}
         <div
