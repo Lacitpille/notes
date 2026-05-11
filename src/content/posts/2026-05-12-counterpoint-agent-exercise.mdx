@@ -1,0 +1,163 @@
+---
+title: "Species Counterpoint as an Agent Exercise"
+pubDate: 2026-05-12
+draft: false
+tags: ["agents", "music", "counterpoint", "ai"]
+---
+
+## A math exercise wearing a tuxedo
+
+Most musical tasks have soft critics. "Is this melody good?" decomposes into taste, context, and a hundred unfalsifiable priors. You can train on it — people do — but the loop is loose and the failure modes are hard to read.
+
+Species counterpoint is different. Fux's *Gradus ad Parnassum* (1725) codified a pedagogical tradition in which every voice-leading decision is either legal or illegal, and the rules are local enough that a deterministic checker fits in a few hundred lines of Python. The output is still music — playable, audible, sometimes even beautiful — but the grading rubric is a small theorem prover.
+
+That makes it one of the cleanest LLM-agent exercises I know of in the music domain. The reward signal is crisp, the curriculum is built in, and the failure modes are diagnostic rather than mysterious.
+
+## What species counterpoint actually is
+
+You're given a *cantus firmus*: a fixed melodic line, usually 8–12 whole notes, diatonic, with a small set of structural conventions (begin and end on the tonic, approach the final by step, no large leaps, etc.). Your job is to write a second voice against it. The "species" are five increasingly florid relationships between the new voice and the cantus:
+
+1. **First species** — note against note. One counterpoint note per cantus note. Only consonances allowed between the voices.
+2. **Second species** — two against one. A weak-beat note may be dissonant if it's a passing tone.
+3. **Third species** — four against one. Adds neighbor tones and the cambiata figure.
+4. **Fourth species** — syncopated whole notes, introducing the suspension: a prepared dissonance that resolves down by step.
+5. **Fifth species** — florid. Mix everything; the line should now have shape, climax, and rhythmic variety.
+
+Each species adds exactly one new rule class to the verifier and one new generative subskill. That structure is what makes it a curriculum rather than a single task.
+
+## Why it's a clean agent target
+
+Four properties, in roughly the order I care about them:
+
+**Crisp verifier.** Every Fux rule is checkable from the score alone — no audio, no aesthetics, no human in the loop. You can write `violations(cantus, counterpoint, species, mode) -> List[Violation]` and the list of violations is your reward signal.
+
+**Graded difficulty.** First species in Dorian is genuinely tractable for a small model with rejection sampling. Fifth species in a mode with a chromatic inflection is hard for current systems. You can pick exactly where on this curve you want to work.
+
+**Shared scaffolding.** The same representation, verifier framework, and generator loop carry from species to species. You build the harness once.
+
+**Audible output.** Unlike most formal-verification toys, you can render the result with LilyPond or MuseScore and listen to it. This matters more than it sounds — the verifier-exploit failure modes (more on these below) are much faster to spot by ear than by reading a score.
+
+## Verifier first, always
+
+This is the part to get right before writing a single line of generator code. Every bug in the verifier becomes a bug the generator will eventually learn to exploit.
+
+The rules split into two layers.
+
+**Hard rules** — binary, non-negotiable, derived directly from Fux:
+
+- No parallel or direct perfect fifths or octaves between the voices.
+- Dissonances are forbidden in first species, and in higher species only on weak beats and only as passing tones, neighbor tones, or properly prepared and resolved suspensions.
+- Suspensions resolve down by step.
+- Augmented and diminished intervals are forbidden melodically (with a few mode-dependent exceptions).
+- No voice crossing (in strict style; you can relax this).
+- The piece begins on a perfect consonance over the tonic and ends with the species-appropriate cadence formula — typically $\hat{7} \to \hat{8}$ over $\hat{2} \to \hat{1}$ in the cantus.
+- One unique melodic climax in the upper voice.
+
+**Soft rules** — preferences with weights, scored rather than gated:
+
+- Prefer contrary and oblique motion to similar motion.
+- Prefer stepwise motion; large leaps should be followed by stepwise motion in the opposite direction.
+- Limit repetition of the same pitch.
+- Mode-consistent leading-tone treatment.
+- A balanced contour — the climax should be approached and departed from gracefully.
+
+The contract:
+
+```python
+@dataclass
+class Violation:
+    rule_id: str
+    severity: Literal["hard", "soft"]
+    location: tuple[int, int]   # (bar, beat)
+    voices: tuple[int, int]
+    message: str
+
+def violations(
+    cantus: Line,
+    counterpoint: Line,
+    species: int,
+    mode: Mode,
+) -> list[Violation]: ...
+```
+
+Two things to be careful about while building this.
+
+First, make every rule independently testable. The temptation is to write one giant pass over the score; resist it. You want to be able to unit-test "this verifier correctly flags parallel fifths but not consecutive fifths separated by contrary motion" without setting up a full piece. Fux's own worked examples in *Gradus* are excellent fixtures here — both the legal and the deliberately illegal demonstrations.
+
+Second, keep the soft-rule weights configurable. You'll be tuning them constantly once the generator is running, and you want them in a config file, not threaded through code.
+
+## Generator design
+
+The interesting decomposition question: bar-by-bar, or whole-line?
+
+**Bar-by-bar** is the more tractable choice. The agent proposes one counterpoint note (or in higher species, one bar's worth of notes), the verifier checks legality against everything so far, and you do beam search over the resulting tree. This is essentially how the rule-based counterpoint generators of the 1990s worked, and it has the major advantage that you never waste compute on a globally-illegal line: every partial extension is locally legal by construction.
+
+The disadvantage is greediness. Counterpoint has a global shape — the climax should be in a particular region, the cadence formula constrains the last 2–3 bars, the contour should arc rather than wander. A purely local generator paints itself into corners. You'll see this concretely as: the generator does fine for 6 bars and then can't construct a legal cadence because it used up the leading tone in bar 4.
+
+**Whole-line** generation gives the LLM the global picture and produces lines with shape, but the rejection rate is brutal. Most outputs will have at least one hard violation; if you reject and retry, you burn through tokens.
+
+The middle path that works well in practice: **sketch and repair**.
+
+1. The LLM proposes a full counterpoint line as a sketch, conditioned on the cantus, species, and mode.
+2. The verifier returns the list of violations.
+3. A second pass — same model or a smaller one — does local repairs to the violated bars, with the constraint that it can only modify the flagged positions and their immediate neighbors.
+4. Iterate to a fixed point or a step limit.
+
+This is essentially what the DeepBach line of work converged on for chorale harmonization, and the same shape applies here. It separates the "what shape should this line have" question (handled by the LLM's prior) from the "is it legal" question (handled by the verifier), which is exactly the kind of decomposition agent designs benefit from.
+
+## Representation matters more than it seems
+
+Do not hand the LLM raw MIDI numbers. The reason is concrete: every counterpoint rule is naturally stated in terms of scale degree and interval to the other voice. "Parallel fifth" is invisible if you're looking at the sequence `[67, 69, 71]` against `[60, 62, 64]`. It is screaming at you if you're looking at the pair-sequence `[(5̂, P5), (6̂, P5), (7̂, P5)]`.
+
+A representation that works:
+
+```
+Bar 1: cantus = D4 (1̂),  cpt = A4 (5̂),  interval = P5,  motion = —
+Bar 2: cantus = F4 (3̂),  cpt = A4 (5̂),  interval = m3,  motion = oblique
+Bar 3: cantus = E4 (2̂),  cpt = G4 (4̂),  interval = m3,  motion = parallel
+...
+```
+
+The LLM is doing pattern-matching on the surface form of its input. Give it the surface form where the rules are visible.
+
+A related point: the cantus firmus belongs in the prompt as a constraint, not as part of the score-to-be-completed. Otherwise the model occasionally tries to "fix" the cantus.
+
+## Where it gets interesting
+
+Two failure modes are worth designing for in advance, because they're going to happen.
+
+**The verifier-exploit.** Your generator will discover that the easiest way to satisfy a constraint set written in terms of "no X" rules is to do as little as possible. Concretely, it will start producing lines that oscillate between two safe pitches, or sit on the tonic for half the piece, or repeat the same three-note figure. Every rule you wrote is satisfied. The result is unlistenable.
+
+The fix is not to write a "don't be boring" rule (you can't formalize that crisply enough). The fix is to recognize that this is the alignment problem in miniature: your hard constraints under-specify the task, and the prior the LLM brings — the implicit "what does counterpoint sound like" embedded in its training — is the only thing standing between you and degenerate solutions. The soft-rule layer (climax, contour, variety, motion preferences) exists precisely to push back against the degeneracy.
+
+**Correct-but-lifeless output.** Even with the soft rules engaged, a well-tuned rule-following generator will produce lines that satisfy Fux but don't sound like music anyone wanted to write. This is the classic conservatory complaint about Fux-bots going back to the 1980s.
+
+The interesting research question isn't "can we make legal counterpoint" — solved, repeatedly — but "what reward shaping yields counterpoint that an expert would call musical?" That's where the exercise stops being about counterpoint and starts being about agent design. You have a sparse, deterministic, hard-constraint signal (the verifier) and a dense, learned, aesthetic prior (the LLM). The question of how to combine them, how much to weight each, and how to detect when one is dominating the other, generalizes far past music.
+
+## A noise floor and a target
+
+A reasonable measurement protocol:
+
+- **Hit rate**: fraction of generated lines with zero hard violations.
+- **Soft score**: average soft-rule cost on hard-legal lines.
+- **Expert agreement**: for a held-out set of cantus firmi with published Fux solutions, edit distance from the generator's output to the canonical solution. (Don't optimize against this — it's a sanity check, not an objective. Fux's solutions are one valid line among many.)
+
+The first useful milestone is unambiguous: 100% hit rate on first-species, 20 cantus firmi, Dorian and Ionian. Until you hit it, don't touch second species. The discipline of finishing one species before moving on is what turns this from a toy into a curriculum.
+
+## Practical stack
+
+- **music21** for parsing, representing, and rendering scores. It has built-in support for some voice-leading checks you can crib from or use as a reference implementation for your own.
+- **MuseScore 4 or LilyPond** for engraving the output. LilyPond is what you want if the agent is producing many examples — it's scriptable and the output is publication-quality.
+- **MIDI export** for listening. Don't skip this. Counterpoint that looks fine on paper sometimes sounds wrong, and vice versa.
+- **Fux's exercises** as fixtures. The cantus firmi in *Gradus* are public domain, well-studied, and come with worked solutions in every species. Mark Schubert's modern English edition is the standard reference.
+
+## What this teaches that generalizes
+
+The reason I'd recommend this exercise over a flashier agent project is what it forces you to confront:
+
+1. **The verifier is the product.** The generator is interchangeable; the verifier is what makes the loop closeable. Most agent failures I've seen come from people building a strong generator against a weak critic.
+2. **Representation is half the battle.** The scale-degree vs. MIDI choice is not cosmetic. It changes which rules are linearly separable in the input space.
+3. **Hard constraints under-specify.** You will not write your way out of degenerate solutions by adding more rules. At some point the prior has to do work, and the question becomes how to keep that prior on-task.
+4. **Curricula are real.** Building first species before second species, and second before third, is not pedagogical theater — it's what lets you debug the verifier in isolation before the generator's failures start interacting with the rule set's gaps.
+
+If you build this and the fifth-species output is still wooden — and it will be — you'll have learned more about agent design than you would from another month of toy benchmark chasing. And you'll have a Bach-adjacent thing that plays.
